@@ -41,11 +41,11 @@ export async function POST(req: Request) {
     }
 
     const admin = createAdminSupabaseClient();
-    const linkResult =
-      mode === "signup"
-        ? await admin.auth.admin.generateLink({ type: "signup", email })
-        : await admin.auth.admin.generateLink({ type: "magiclink", email });
-    const { data, error } = linkResult;
+    // OTP email uses magiclink generation (includes email_otp). "signup" link type requires a password in newer SDK types.
+    const { data, error } = await admin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+    });
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
