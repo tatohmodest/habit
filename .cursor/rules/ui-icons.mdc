@@ -1,0 +1,10 @@
+---
+description: Habit app UI uses Lucide icons only and avoids emoji in the interface.
+globs: "**/*.{tsx,ts,css}"
+---
+
+# UI icons and copy
+
+- Do not use emoji characters in user-visible UI (screens, buttons, toasts, empty states).
+- Use **lucide-react** icons only for glyphs and affordances. Store habit icons in the database as Lucide component names (e.g. `Flame`, `BookOpen`) and map them to components with a single dynamic resolver (see `components/HabitIcon.tsx`).
+- Prefer the app accent **#ec5b13** (`text-primary` / `bg-primary`) on light **neutral** surfaces; keep layouts readable and consistent with existing `(app)` shell patterns.

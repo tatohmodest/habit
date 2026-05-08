@@ -1,0 +1,9 @@
+{
+  "icon": {
+    "source": "public/app_icon.png"
+  },
+  "splash": {
+    "source": "public/app_icon.png"
+  }
+}
+
