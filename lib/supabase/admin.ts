@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-/** Service-role client — server-only API routes / cron. Never import from Client Components. */
+/** Service-role client — server-only API routes. Never import from Client Components. */
 export function createAdminSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
