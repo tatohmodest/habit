@@ -10,6 +10,7 @@ export function HabitIcon({
   name: string;
   className?: string;
 }) {
-  const Icon = (Lucide as Record<string, LucideIcon>)[name] ?? Fallback;
+  const Icon =
+    (Lucide as unknown as Record<string, LucideIcon>)[name] ?? Fallback;
   return <Icon className={className} aria-hidden />;
 }
