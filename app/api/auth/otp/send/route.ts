@@ -41,10 +41,11 @@ export async function POST(req: Request) {
     }
 
     const admin = createAdminSupabaseClient();
-    const { data, error } = await admin.auth.admin.generateLink({
-      type: mode === "signup" ? "signup" : "magiclink",
-      email,
-    });
+    const linkResult =
+      mode === "signup"
+        ? await admin.auth.admin.generateLink({ type: "signup", email })
+        : await admin.auth.admin.generateLink({ type: "magiclink", email });
+    const { data, error } = linkResult;
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

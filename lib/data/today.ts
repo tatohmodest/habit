@@ -46,11 +46,11 @@ export async function loadTodaySnapshot(userId: string) {
       .map((r) => r.habit.id);
 
     const weekStart = format(
-      startOfISOWeek(new Date(), { weekStartsOn: 1 }),
+      startOfISOWeek(new Date()),
       "yyyy-MM-dd"
     );
     const weekEnd = format(
-      endOfISOWeek(new Date(), { weekStartsOn: 1 }),
+      endOfISOWeek(new Date()),
       "yyyy-MM-dd"
     );
 

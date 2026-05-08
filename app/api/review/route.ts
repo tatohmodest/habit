@@ -22,11 +22,11 @@ export async function GET() {
       .limit(12);
 
     const weekStart = format(
-      startOfISOWeek(new Date(), { weekStartsOn: 1 }),
+      startOfISOWeek(new Date()),
       "yyyy-MM-dd"
     );
     const weekEnd = format(
-      endOfISOWeek(new Date(), { weekStartsOn: 1 }),
+      endOfISOWeek(new Date()),
       "yyyy-MM-dd"
     );
 
@@ -61,11 +61,11 @@ export async function POST(req: Request) {
         : null;
 
     const weekStart = format(
-      startOfISOWeek(new Date(), { weekStartsOn: 1 }),
+      startOfISOWeek(new Date()),
       "yyyy-MM-dd"
     );
     const weekEnd = format(
-      endOfISOWeek(new Date(), { weekStartsOn: 1 }),
+      endOfISOWeek(new Date()),
       "yyyy-MM-dd"
     );
 

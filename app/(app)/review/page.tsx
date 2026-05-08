@@ -19,10 +19,10 @@ export default async function ReviewPage() {
   const profile = await requireProfile();
   const db = requireDb();
 
-  const weekStartDate = startOfISOWeek(new Date(), { weekStartsOn: 1 });
-  const weekEndDate = endOfISOWeek(new Date(), { weekStartsOn: 1 });
+  const weekStartDate = startOfISOWeek(new Date());
+  const weekEndDate = endOfISOWeek(new Date());
   const prevWeekStartDate = subWeeks(weekStartDate, 1);
-  const prevWeekEndDate = endOfISOWeek(prevWeekStartDate, { weekStartsOn: 1 });
+  const prevWeekEndDate = endOfISOWeek(prevWeekStartDate);
 
   const weekStart = format(weekStartDate, "yyyy-MM-dd");
   const weekEnd = format(weekEndDate, "yyyy-MM-dd");
@@ -283,14 +283,14 @@ function calcReviewStreak(weekStarts: Array<string | Date>) {
     .map((w) => {
       const date = typeof w === "string" ? parseISO(w) : w;
       if (!isValid(date)) return null;
-      return format(startOfISOWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
+      return format(startOfISOWeek(date), "yyyy-MM-dd");
     })
     .filter((x): x is string => Boolean(x))
     .sort((a, b) => (a > b ? -1 : 1));
   if (!normalized.length) return 0;
 
   let streak = 0;
-  let cursor = format(startOfISOWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+  let cursor = format(startOfISOWeek(new Date()), "yyyy-MM-dd");
   const set = new Set(normalized);
   while (set.has(cursor)) {
     streak += 1;

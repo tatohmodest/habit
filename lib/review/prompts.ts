@@ -24,7 +24,7 @@ function hashText(input: string) {
 }
 
 export function getWeeklyReflectionPrompt(userId: string, date = new Date()) {
-  const weekKey = format(startOfISOWeek(date, { weekStartsOn: 1 }), "yyyy-MM-dd");
+  const weekKey = format(startOfISOWeek(date), "yyyy-MM-dd");
   const idx = hashText(`${userId}:${weekKey}`) % REFLECTION_PROMPTS.length;
   return REFLECTION_PROMPTS[idx];
 }
