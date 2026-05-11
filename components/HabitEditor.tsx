@@ -144,8 +144,19 @@ export function HabitEditor({ habitId }: { habitId?: string }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-neutral-900 outline-none ring-primary focus:ring-2"
-          placeholder="Morning prayer"
+          placeholder="Read [bible]Scripture[/bible] for 10 minutes"
         />
+        <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+          Wrap any words with{" "}
+          <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[11px] text-neutral-700">
+            [bible]…[/bible]
+          </code>{" "}
+          to make them open the Bible App when tapped — for example:{" "}
+          <span className="font-medium text-neutral-700">
+            Read [bible]your Bible[/bible] today
+          </span>
+          .
+        </p>
       </div>
 
       <div>
@@ -156,7 +167,7 @@ export function HabitEditor({ habitId }: { habitId?: string }) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="min-h-[88px] w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-neutral-900 outline-none ring-primary focus:ring-2"
-          placeholder="Why this habit matters"
+          placeholder="Why this habit matters (you can use [bible]links[/bible] here too)"
         />
       </div>
 

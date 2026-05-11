@@ -25,8 +25,10 @@ export async function POST(req: Request) {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const folder = "habit/avatars";
     const publicId = `profile-${profile.id}`;
+    // Every signed upload param except `file`, `api_key`, and `cloud_name` must be included in the signature (sorted).
     const signature = signCloudinaryParams({
       folder,
+      overwrite: "true",
       public_id: publicId,
       timestamp,
     });

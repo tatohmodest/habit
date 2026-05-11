@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { loadTodaySnapshot } from "@/lib/data/today";
 import { CompleteHabitButton } from "@/components/CompleteHabitButton";
+import { HabitLinkedText } from "@/components/HabitLinkedText";
 import { HabitIcon } from "@/components/HabitIcon";
 
 type HabitRow = Awaited<ReturnType<typeof loadTodaySnapshot>>["habits"][number];
@@ -56,7 +57,7 @@ export function HabitsCategoryTabs({ habits }: { habits: HabitRow[] }) {
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col justify-center">
                   <p className="line-clamp-1 text-base font-bold text-neutral-900">
-                    {h.name}
+                    <HabitLinkedText text={h.name} />
                   </p>
                   <p className="text-xs font-normal text-neutral-500">
                     Streak: {h.streak?.currentStreak ?? 0} days

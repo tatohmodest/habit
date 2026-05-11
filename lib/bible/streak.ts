@@ -5,10 +5,31 @@ import { accountabilityEvents } from "@/lib/db/schema";
 
 export const BIBLE_STEP_KEYS = [
   "bible_verse",
+  "bible_open_app",
   "bible_audio",
   "bible_guided_scripture",
   "bible_guided_prayer",
 ] as const;
+
+/** Original four Bible steps (before “open Bible App” was added). */
+const LEGACY_BIBLE_DAY_KEYS = [
+  "bible_verse",
+  "bible_audio",
+  "bible_guided_scripture",
+  "bible_guided_prayer",
+] as const;
+
+/**
+ * Streak history: any **past** day counts if you logged the original four Bible steps, or all five.
+ * **Today** only counts toward the chain once all five steps exist — so a partial day doesn’t
+ * inflate the streak. (`isDayComplete` / diamonds still use all five — see below.)
+ */
+function bibleDayCountsTowardStreak(stepTypes: Set<string>, dateStr: string): boolean {
+  if (BIBLE_STEP_KEYS.every((k) => stepTypes.has(k))) return true;
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  if (dateStr === todayStr) return false;
+  return LEGACY_BIBLE_DAY_KEYS.every((k) => stepTypes.has(k));
+}
 
 export type BibleStepKey = (typeof BIBLE_STEP_KEYS)[number];
 
@@ -26,6 +47,7 @@ export type BibleProgress = {
 function toStepRecord(keys: string[]): Record<BibleStepKey, boolean> {
   return {
     bible_verse: keys.includes("bible_verse"),
+    bible_open_app: keys.includes("bible_open_app"),
     bible_audio: keys.includes("bible_audio"),
     bible_guided_scripture: keys.includes("bible_guided_scripture"),
     bible_guided_prayer: keys.includes("bible_guided_prayer"),
@@ -39,6 +61,7 @@ export async function getBibleProgress(userId: string): Promise<BibleProgress> {
     date: today,
     completed: {
       bible_verse: false,
+      bible_open_app: false,
       bible_audio: false,
       bible_guided_scripture: false,
       bible_guided_prayer: false,
@@ -93,7 +116,7 @@ export async function getBibleProgress(userId: string): Promise<BibleProgress> {
       if (row.type === "bible_diamond_reward") rewardEvents += 1;
     }
     for (const [d, set] of byDay.entries()) {
-      if (BIBLE_STEP_KEYS.every((k) => set.has(k))) dayCompleteDates.add(d);
+      if (bibleDayCountsTowardStreak(set, d)) dayCompleteDates.add(d);
     }
     for (const d of repairedDates) dayCompleteDates.add(d);
 

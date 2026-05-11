@@ -1,9 +1,13 @@
 "use client";
 
-import { CheckCircle2, Diamond, Flame, Snowflake, Volume2 } from "lucide-react";
+import { BookOpen, CheckCircle2, Diamond, Flame, Snowflake, Volume2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { CompletionCelebrationModal } from "@/components/CompletionCelebrationModal";
+import {
+  CompletionCelebrationModal,
+  type DiamondRewardInfo,
+} from "@/components/CompletionCelebrationModal";
 import type { DailyBiblePayload } from "@/lib/youversion/daily";
 import type { BibleProgress, BibleStepKey } from "@/lib/bible/streak";
 
@@ -20,19 +24,25 @@ const STEPS: Step[] = [
     description: "Read today's verse and lock your first step.",
   },
   {
+    key: "bible_open_app",
+    title: "Today's devotional",
+    description:
+      "Open the Bible App for today's reading or plans. When you're done, come back and mark this step.",
+  },
+  {
     key: "bible_audio",
-    title: "Audio Bible",
-    description: "Listen to today's verse audio to anchor it in your mind.",
+    title: "Listen",
+    description: "Hear this verse read aloud on your phone.",
   },
   {
     key: "bible_guided_scripture",
-    title: "Guided scripture",
-    description: "Walk through the guided scripture reflection.",
+    title: "Reflect",
+    description: "Slow down and answer the prompts below.",
   },
   {
     key: "bible_guided_prayer",
-    title: "Guided prayer",
-    description: "Close with a guided prayer to seal the day.",
+    title: "Pray",
+    description: "Pray using the words below or your own.",
   },
 ];
 
@@ -43,37 +53,60 @@ export function BibleStreakCard({
   bible: DailyBiblePayload;
   initialProgress: BibleProgress;
 }) {
+  const router = useRouter();
   const [progress, setProgress] = useState(initialProgress);
   const [loadingStep, setLoadingStep] = useState<string | null>(null);
   const [openStep, setOpenStep] = useState<BibleStepKey | null>("bible_verse");
-  const [celebrate, setCelebrate] = useState<{ open: boolean; title: string; subtitle: string }>(
-    { open: false, title: "", subtitle: "" }
-  );
+  const [celebrate, setCelebrate] = useState<{
+    open: boolean;
+    title: string;
+    subtitle: string;
+    diamondReward?: DiamondRewardInfo;
+  }>({ open: false, title: "", subtitle: "" });
 
-  const closeCelebrate = useCallback(
-    () => setCelebrate({ open: false, title: "", subtitle: "" }),
-    []
-  );
+  const closeCelebrate = useCallback(() => {
+    setCelebrate((prev) => {
+      if (prev.diamondReward) {
+        queueMicrotask(() => router.refresh());
+      }
+      return { open: false, title: "", subtitle: "" };
+    });
+  }, [router]);
+
+  const bibleAppHref =
+    bible.deepLink ?? "https://www.bible.com/verse-of-the-day";
 
   async function completeStep(step: BibleStepKey) {
     if (progress.completed[step] || loadingStep) return;
+    const prevDiamonds = progress.diamonds;
     setLoadingStep(step);
     try {
       const res = await fetch("/api/bible/progress", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step }),
       });
       if (!res.ok) throw new Error("Failed to save");
       const data = (await res.json()) as BibleProgress;
       setProgress(data);
+      const earnedDiamond = data.diamonds > prevDiamonds;
       setCelebrate({
         open: true,
-        title: "Great job!",
-        subtitle:
-          step === "bible_audio"
-            ? "Audio Bible step completed."
-            : "Bible step completed.",
+        title: earnedDiamond ? "Full day complete!" : "Great job!",
+        subtitle: earnedDiamond
+          ? "Every Bible step finished — here’s your diamond."
+          : step === "bible_audio"
+            ? "Listen step done."
+            : "Step saved.",
+        ...(earnedDiamond
+          ? {
+              diamondReward: {
+                previous: prevDiamonds,
+                current: data.diamonds,
+              } satisfies DiamondRewardInfo,
+            }
+          : {}),
       });
     } finally {
       setLoadingStep(null);
@@ -94,6 +127,7 @@ export function BibleStreakCard({
   async function unfreezeDay() {
     const res = await fetch("/api/bible/progress", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "unfreeze" }),
     });
@@ -119,9 +153,7 @@ export function BibleStreakCard({
               {bible.reference}
             </p>
             <p className="mt-1 text-[11px] font-medium text-neutral-500">
-              {bible.source === "youversion_official"
-                ? "Official YouVersion Verse of the Day"
-                : "Fallback daily passage (official VOTD unavailable for this key scope)"}
+              {bible.source === "youversion_official" ? "Today's verse" : "Today's reading"}
             </p>
           </div>
           <div className="rounded-full bg-primary/10 px-3 py-1 text-primary">
@@ -170,6 +202,8 @@ export function BibleStreakCard({
                   >
                     {step.key === "bible_audio" && !done ? (
                       <Volume2 className="size-3.5" />
+                    ) : step.key === "bible_open_app" && !done ? (
+                      <BookOpen className="size-3.5" />
                     ) : (
                       <CheckCircle2 className="size-3.5" />
                     )}
@@ -188,23 +222,38 @@ export function BibleStreakCard({
                         <strong>{bible.reference}.</strong> {bible.content || bible.devotion}
                       </p>
                     )}
+                    {step.key === "bible_open_app" && (
+                      <>
+                        <p className="text-sm text-neutral-700">
+                          Continue with today's devotional or a Plan in the Bible App. When
+                          you&apos;re finished there, come back and tap{" "}
+                          <strong>Mark step complete</strong>.
+                        </p>
+                        <Link
+                          href={bibleAppHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex w-full items-center justify-center rounded-lg border border-primary bg-white px-3 py-2.5 text-xs font-semibold text-primary shadow-sm"
+                        >
+                          Open Bible App
+                        </Link>
+                      </>
+                    )}
                     {step.key === "bible_guided_scripture" && (
                       <p className="text-sm text-neutral-700">
-                        Guided scripture: Read the verse again slowly. What word stands out? What
-                        is God inviting you to obey today? Write one concrete action before you
-                        leave this screen.
+                        Read the verse again slowly. What word stands out? What is God inviting you
+                        to obey today? Write one concrete action before you leave this screen.
                       </p>
                     )}
                     {step.key === "bible_guided_prayer" && (
                       <p className="text-sm text-neutral-700">
-                        Guided prayer: “Lord, anchor me in Your Word today. Give me strength to act
-                        on what You showed me and keep me faithful in small steps. Amen.”
+                        “Lord, anchor me in Your Word today. Give me strength to act on what You
+                        showed me and keep me faithful in small steps. Amen.”
                       </p>
                     )}
                     {step.key === "bible_audio" && (
                       <p className="text-sm text-neutral-700">
-                        Audio playback uses your device voice right now. Tap play to listen and mark
-                        this step.
+                        Tap play to hear this verse read aloud on your device.
                       </p>
                     )}
                     <div className="flex gap-2">
@@ -272,21 +321,12 @@ export function BibleStreakCard({
           </div>
         )}
 
-        {bible.deepLink && (
-          <Link
-            href={bible.deepLink}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-flex text-sm font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            Open in Bible App
-          </Link>
-        )}
       </div>
       <CompletionCelebrationModal
         open={celebrate.open}
         title={celebrate.title}
         subtitle={celebrate.subtitle}
+        diamondReward={celebrate.diamondReward}
         onClose={closeCelebrate}
       />
     </section>

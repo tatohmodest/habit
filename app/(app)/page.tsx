@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { CompleteHabitButton } from "@/components/CompleteHabitButton";
+import { HabitLinkedText } from "@/components/HabitLinkedText";
 import { DailyVerseCard } from "@/components/DailyVerseCard";
 import { HabitIcon } from "@/components/HabitIcon";
 import { AvatarUploader } from "@/components/AvatarUploader";
@@ -51,8 +52,9 @@ export default async function HomePage() {
   const shortName = displayName.split(/\s+/)[0] ?? displayName;
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background pb-28 text-foreground">
-      <header className="flex items-center gap-3 border-b border-neutral-200 bg-white p-4 pb-3">
+    <div className="relative flex min-h-screen w-full flex-col bg-background pb-28 text-foreground">
+      {/* Fixed (not sticky): parent overflow-x-hidden breaks sticky on many mobile browsers */}
+      <header className="fixed inset-x-0 top-0 z-50 flex items-center gap-3 border-b border-neutral-200 bg-white/95 px-4 pb-3 pt-safe shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/90">
         <AvatarUploader avatarUrl={profile.avatarUrl ?? null} />
         <h2 className="min-w-0 flex-1 text-lg font-bold leading-tight tracking-tight">
           {greeting}, {shortName}
@@ -69,9 +71,23 @@ export default async function HomePage() {
             <Diamond className="size-3.5" aria-hidden />
             {bibleProgress.diamonds}
           </span>
-          <Bell className="size-5" aria-hidden />
+          <Link
+            href="/habits"
+            className="flex size-10 items-center justify-center rounded-full text-neutral-400 transition hover:bg-neutral-100 hover:text-primary"
+            aria-label="Habits and reminders"
+          >
+            <Bell className="size-5" aria-hidden />
+          </Link>
         </div>
       </header>
+      {/* Reserve space: pt-safe + pb-3 + h-10 row */}
+      <div
+        className="shrink-0"
+        style={{
+          height: "calc(3.25rem + env(safe-area-inset-top, 0px))",
+        }}
+        aria-hidden
+      />
 
       <DailyVerseCard />
 
@@ -109,7 +125,9 @@ export default async function HomePage() {
                     <div className="flex size-9 items-center justify-center rounded-lg bg-orange-50 text-primary">
                       <HabitIcon name={h.iconKey} className="size-5" />
                     </div>
-                    <p className="text-sm font-medium text-neutral-800">{h.name}</p>
+                    <p className="text-sm font-medium text-neutral-800">
+                      <HabitLinkedText text={h.name} />
+                    </p>
                   </div>
                   <Flame className="size-5 shrink-0 text-primary" aria-hidden />
                 </div>
@@ -159,7 +177,9 @@ export default async function HomePage() {
                 </div>
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <h3 className="text-base font-bold text-neutral-900">{h.name}</h3>
+                    <h3 className="text-base font-bold text-neutral-900">
+                      <HabitLinkedText text={h.name} />
+                    </h3>
                     <span className="rounded border border-primary px-1.5 text-[10px] font-black uppercase text-primary">
                       open
                     </span>
@@ -186,7 +206,7 @@ export default async function HomePage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-base font-bold text-neutral-500 line-through">
-                    {h.name}
+                    <HabitLinkedText text={h.name} />
                   </h3>
                   <div className="flex items-center gap-1 text-xs text-accent-green">
                     <CheckCircle2 className="size-3.5" aria-hidden />

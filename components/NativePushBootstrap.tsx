@@ -11,6 +11,7 @@ import { useEffect } from "react";
 async function registerToken(token: Token) {
   await fetch("/api/notifications/register", {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ fcmToken: token.value }),
   });

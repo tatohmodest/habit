@@ -9,27 +9,36 @@ export function AvatarUploader({ avatarUrl }: { avatarUrl: string | null }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [displayUrl, setDisplayUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function onFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
+    setError(null);
     try {
       const formData = new FormData();
       formData.append("file", file);
 
       const res = await fetch("/api/profile/avatar", {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
       if (!res.ok) {
         const payload = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(payload.error ?? "Upload failed");
       }
+      const data = (await res.json()) as { avatarUrl?: string };
+      if (data.avatarUrl) {
+        const sep = data.avatarUrl.includes("?") ? "&" : "?";
+        setDisplayUrl(`${data.avatarUrl}${sep}t=${Date.now()}`);
+      }
       router.refresh();
-    } catch {
-      // keep silent in UI for now; page remains usable
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -61,6 +70,11 @@ export function AvatarUploader({ avatarUrl }: { avatarUrl: string | null }) {
         className="hidden"
         onChange={onFileChange}
       />
+      {error ? (
+        <p className="absolute left-0 top-full z-10 mt-1 max-w-[200px] text-[10px] font-medium text-red-600">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

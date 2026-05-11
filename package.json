@@ -3,17 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "node scripts/sync-capacitor-agp.cjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "cap:init": "cap init Habit com.loopingbinary.habit --web-dir=.next",
+    "cap:init": "cap init Habit com.loopingbinary.habit --web-dir=public",
     "cap:add:android": "cap add android",
     "cap:add:ios": "cap add ios",
     "cap:sync": "cap sync",
     "cap:open:android": "cap open android",
     "cap:open:ios": "cap open ios",
+    "cap:icon": "node scripts/generate-app-icon.mjs",
     "cap:assets": "capacitor-assets generate --android --ios",
+    "cap:prep": "pnpm run cap:icon && cap sync",
+    "cap:android-sdk": "node scripts/ensure-android-sdk.mjs",
+    "cap:android": "pnpm run build && pnpm run cap:prep && node scripts/android-assemble-debug.mjs",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
@@ -51,6 +56,7 @@
     "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "sharp": "^0.33.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
